@@ -1,0 +1,113 @@
+#+TITLE: Emacs Configuration File
+#+PROPERTY: header-args :tangle yes
+
+* Usage
+  Put this in your emacs config file (~/.emacs.el, ~/.emacs, ~/.emacs.d/init.el,...)
+
+  #+BEGIN_SRC emacs-lisp
+     (require 'org)
+     (org-babel-load-file
+       (expand-file-name "emacs-config.org" "/path/to/emacs-config.org-file"))
+  #+END_SRC
+* Package initialization
+** Archives provider for package-archives
+   #+BEGIN_SRC emacs-lisp
+      (require 'package)
+      (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                               ("org"   . "https://orgmode.org/elpa/")
+                               ("elpa"  . "https://elpa.gnu.org/packages/")))
+   #+END_SRC
+** Required packages
+   #+BEGIN_SRC emacs-lisp
+       (setq package-list
+                '(modus-themes use-package rust-mode multiple-cursors markdown-mode magit dockerfile-mode docker-compose-mode org-bullets))
+   #+END_SRC
+** Inititialize package
+   #+BEGIN_SRC emacs-lisp
+      (package-initialize)
+      (unless package-archive-contents
+        (package-refresh-contents))
+      
+      ;; Initialize use-package on non-Linux platforms
+      (unless (package-installed-p 'use-package)
+        (package-install 'use-package))
+      
+      (require 'use-package)
+      (setq use-package-always-ensure t)
+   #+END_SRC
+* Disable all default start up thingy
+  #+BEGIN_SRC emacs-lisp
+    (setq inhibit-startup-message t)					; Hide welcome screen
+    (add-to-list 'default-frame-alist '(fullscreen . maximized))	; Maximize the window on start-up
+    (scroll-bar-mode 0)							; Disable visible scroll bar
+    (tool-bar-mode 0)							; Disable the tool bar
+    (tooltip-mode 0)							; Disable tooltips
+    (menu-bar-mode 0)							; Disable the menu bar
+    (column-number-mode 1)						; Enable column count
+    (show-paren-mode 1)							; Show parentheses pair
+    (blink-cursor-mode 0)						; Disable blink cursor
+    (setq ring-bell-function 'ignore)					; Disable bell alarm
+  #+END_SRC
+* Coding prefrerences
+  #+BEGIN_SRC emacs-lisp
+    (setq display-line-numbers-type 'absolute)	; Set absolute line number
+    (global-display-line-numbers-mode)		; Set line number for all files
+  #+END_SRC
+* Set backup files thingy (which may not be working right now)
+  #+BEGIN_SRC emacs-lisp
+    (setq backup-directory-alist '(("." . "~/.emacs_saves")))       ; Set backup directory
+    (setq make-backup-files nil)                                    ; Disable create backup file function [Might bite me in the ass]
+  #+END_SRC
+* Ido mode
+  The ido.el package by [[https://www.emacswiki.org/emacs/KimStorm][KimStorm]] lets you interactively do things with buffers and files. 
+  As an example, while searching for a file with C-x C-f, ido can helpfully suggest the files whose paths are closest to your current string, 
+  allowing you to find your files more quickly.
+
+  #+BEGIN_SRC emacs-lisp
+    (require 'ido)
+    (ido-mode 'buffer) ; Set Ido mode on buffer only
+  #+END_SRC
+* Modus theme config
+  #+BEGIN_SRC emacs-lisp
+    (require 'modus-themes)
+    (setq modus-themes-mode-line '(accented borderless))	; Mode line emacs color
+    (setq modus-themes-region '(bg-only))			; Selection region color
+    (setq modus-themes-bold-constructs t)			; Syntax highlight stuff
+    (setq modus-themes-paren-match '(intense))			; Parentheses matching color
+    (setq modus-themes-prompts '(bold intense))                 ; Bold command promt
+    (setq modus-themes-fringes nil)                             ; Left right column thingy
+    (setq modus-themes-italic-constructs t)			; Italic comment
+  #+END_SRC
+* Themes and fonts
+** Themes:
+   - [[https://github.com/protesilaos/modus-themes][Modus Theme]]
+   - [[https://github.com/rexim/gruber-darker-theme][Gruber Darker Theme]]
+** Fonts:
+   - [[https://fonts.google.com/specimen/Fira+Code][Fira Code]]
+   - [[https://github.com/be5invis/Iosevka][Iosevka]]
+** Load theme and font
+   #+BEGIN_SRC emacs-lisp
+    (load-theme 'modus-vivendi t)	; Dark modus theme
+    (set-frame-font "Fira Code" nil t)	; Font
+   #+END_SRC
+* Dired customizing
+  #+BEGIN_SRC emacs-lisp
+    (setq dired-dwim-target t)						; Quick copy/paste files
+    (setq dired-listing-switches "-alh --group-directories-first")	; Set ls output
+  #+END_SRC
+* Org mode config
+  #+BEGIN_SRC emacs-lisp
+    (require 'org-bullets)					; Pretty bullet for org mode
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))	; Enable pretty bullet
+    (setq org-src-fontify-natively t)				; Code block syntax highlighting
+  #+END_SRC
+* Multiple cursors key binding
+  #+BEGIN_SRC emacs-lisp
+    (require 'multiple-cursors)
+    (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+    (global-set-key (kbd "C->")         'mc/mark-next-like-this)
+    (global-set-key (kbd "C-<")         'mc/mark-previous-like-this)
+    (global-set-key (kbd "C-c C-<")     'mc/mark-all-like-this)
+    (global-set-key (kbd "C-\"")        'mc/skip-to-next-like-this)
+    (global-set-key (kbd "C-:")         'mc/skip-to-previous-like-this)
+  #+END_SRC
