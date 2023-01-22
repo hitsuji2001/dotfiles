@@ -1,0 +1,158 @@
+#+TITLE: Emacs Configuration File
+#+PROPERTY: header-args :tangle yes
+
+* Usage
+  Put this in your emacs config file =(~/.emacs.el, ~/.emacs, ~/.emacs.d/init.el,...)=
+  #+begin_src emacs-lisp :tangle no
+     (require 'org)
+     (org-babel-load-file
+       (expand-file-name "emacs-config.org" "/path/to/emacs-config.org-file"))
+  #+end_src
+* Package initialization
+** Archives provider for package-archives
+   #+begin_src emacs-lisp
+     (require 'package)
+     (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			      ("org"   . "https://orgmode.org/elpa/")
+			      ("elpa"  . "https://elpa.gnu.org/packages/")))
+   #+end_src
+** Required packages
+   - These are the packages for emacs to automatically installed upon running.
+   #+begin_src emacs-lisp
+       (setq package-list
+                '(modus-themes use-package rust-mode multiple-cursors markdown-mode magit dockerfile-mode docker-compose-mode org-bullets))
+   #+end_src
+** Inititialize package
+   #+begin_src emacs-lisp
+     (package-initialize)
+     (unless package-archive-contents
+       (package-refresh-contents))
+     ;; Initialize use-package on non-Linux platforms
+     (unless (package-installed-p 'use-package)
+       (package-install 'use-package))
+     (require 'use-package)
+     (setq use-package-always-ensure t)
+   #+end_src
+* Disable all default toolbar and more
+  #+begin_src emacs-lisp
+    (tooltip-mode 0)						; Disable tooltips
+    (tool-bar-mode 0)						; Disable the toolbar
+    (menu-bar-mode 0)						; Disable the menubar
+    (scroll-bar-mode 0)						; Disable visible scroll bar
+    (show-paren-mode 1)						; Show parentheses pair
+    (blink-cursor-mode 0)						; Disable blink cursor
+    (column-number-mode 1)						; Enable column count
+    (setq inhibit-startup-message t)				; Hide welcome screen
+    (setq ring-bell-function 'ignore)				; Disable bell alarm
+    (add-to-list 'default-frame-alist '(fullscreen . maximized))	; Maximize the window on start-up
+  #+end_src
+* Coding prefrerences
+  - Absolute line number
+    #+begin_src emacs-lisp :tangle yes
+      (setq display-line-numbers-type 'absolute)	; Set absolute line number
+      (global-display-line-numbers-mode)		; Set line number for all files
+    #+end_src
+  - Relative line number
+    #+begin_src emacs-lisp :tangle no
+      (setq display-line-numbers-type 'relative)	; Set relative line number
+      (global-display-line-numbers-mode)		; Set line number for all files
+    #+end_src
+* Set backup files of emacs to directory
+  #+begin_src emacs-lisp
+    (setq backup-directory-alist '(("." . "~/.emacs_saves")))   ; Set backup directory
+    (setq make-backup-files nil)                                ; Disable create backup file function [Might bite me in the ass]
+  #+end_src
+* Ido mode
+  The ido.el package by [[https://www.emacswiki.org/emacs/KimStorm][KimStorm]] lets you interactively do things with buffers and files. 
+  As an example, while searching for a file with C-x C-f, ido can helpfully suggest the files whose paths are closest to your current string, 
+  allowing you to find your files more quickly.
+
+  #+begin_src emacs-lisp
+    (require 'ido)
+    (ido-mode 'buffer) ; Set Ido mode on buffer only
+  #+end_src
+* Modus theme config
+** Modus 3.0.0
+   #+begin_src emacs-lisp :tangle no
+     (require 'modus-themes)
+     (setq modus-themes-mode-line '(accented borderless))	; Mode line emacs color
+     (setq modus-themes-region '(bg-only))			; Selection region color
+     (setq modus-themes-bold-constructs t)			; Syntax highlight stuff
+     (setq modus-themes-italic-constructs t)			; Italic comments
+     (setq modus-themes-paren-match '(intense))		; Parentheses matching color
+     (setq modus-themes-prompts '(bold intense))             ; Bold command promt
+     (setq modus-themes-fringes nil)                         ; Left right column thingy
+   #+end_src
+** Modus 4.0.0
+*** Coding related configuration
+    #+begin_src emacs-lisp :tangle yes
+      (require 'modus-themes)
+      (setq modus-themes-bold-constructs t)		; Syntax highlight stuff
+      (setq modus-themes-prompts '(bold intense))	; Bold command promt
+      ;; (setq modus-themes-italic-constructs t)	; Italic comments
+    #+end_src
+*** Visual configuration
+    #+begin_src emacs-lisp
+      (setq modus-vivendi-tinted-palette-overrides nil)						; Creating varible to store dark theme specific config
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(border-mode-line-inactive unspecified))	; Mode line borderless
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(border-mode-line-active unspecified))	; Mode line borderless
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(bg-paren-match bg-magenta-intense))	; Matching parentheses color
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(bg-region bg-lavender))			; Selection color
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-region unspecified))			; Selection color
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fringe unspecified))			; Left and right most column of emacs color
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-prompt cyan))				; Promt's suggestions color
+    #+end_src
+*** Org-mode configuration
+    - Org-mode =heading= color
+    #+begin_src emacs-lisp
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-heading-1 blue-warmer))
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-heading-2 yellow-cooler))
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-heading-3 cyan-cooler))
+    #+end_src
+* Themes and fonts
+** Themes:
+   - [[https://github.com/protesilaos/modus-themes][Modus Theme]]
+   - [[https://github.com/rexim/gruber-darker-theme][Gruber Darker Theme]]
+** Load theme
+   #+begin_src emacs-lisp
+    (load-theme 'modus-vivendi-tinted t) ; Modus theme version 4.0.0
+   #+end_src
+** Fonts:
+   - [[https://www.jetbrains.com/lp/mono/][JetBrains Mono]]
+   - [[https://fonts.google.com/specimen/Fira+Code][Fira Code]]
+   - [[https://github.com/be5invis/Iosevka][Iosevka]]
+   - [[https://github.com/source-foundry/Hack][Hack]]
+** Load font
+   #+begin_src emacs-lisp
+    (set-frame-font "JetBrainsMono" nil t)
+   #+end_src
+* Dired customizing
+  #+begin_src emacs-lisp
+    (setq dired-dwim-target t)					; Quick copy/paste files between buffers
+    (setq dired-listing-switches "-alh --group-directories-first")	; Set ls output flags for dired
+  #+end_src
+* Org mode config
+** Pretty org bullet
+   #+begin_src emacs-lisp
+     (require 'org-bullets)						; Pretty bullet for org mode
+     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))	; Enable pretty bullet
+     (setq org-src-fontify-natively t)				; Code block syntax highlighting
+   #+end_src
+** Enable languages for org-bable
+   #+begin_src emacs-lisp
+     (org-babel-do-load-languages
+      'org-babel-load-languages 
+      '((C . t)
+	(shell . t)))
+   #+end_src
+* Multiple cursors key binding
+  - This /"plugin's"/ file config is located in =~/.emacs.d/.mc-lists.el=
+  #+begin_src emacs-lisp
+    (require 'multiple-cursors)
+    (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+    (global-set-key (kbd "C->")         'mc/mark-next-like-this)
+    (global-set-key (kbd "C-<")         'mc/mark-previous-like-this)
+    (global-set-key (kbd "C-c C-<")     'mc/mark-all-like-this)
+    (global-set-key (kbd "C-\"")        'mc/skip-to-next-like-this)
+    (global-set-key (kbd "C-:")         'mc/skip-to-previous-like-this)
+  #+end_src
