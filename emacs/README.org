@@ -1,5 +1,6 @@
 #+TITLE: Emacs Configuration File
 #+PROPERTY: header-args :tangle yes
+#+AUTHOR: Hitsuji
 
 * Usage
   Put this in your emacs config file =(~/.emacs.el, ~/.emacs, ~/.emacs.d/init.el,...)=
@@ -13,8 +14,8 @@
    #+begin_src emacs-lisp
      (require 'package)
      (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-			      ("org"   . "https://orgmode.org/elpa/")
-			      ("elpa"  . "https://elpa.gnu.org/packages/")))
+                              ("org"   . "https://orgmode.org/elpa/")
+                              ("elpa"  . "https://elpa.gnu.org/packages/")))
    #+end_src
 ** Required packages
    - These are the packages for emacs to automatically installed upon running.
@@ -35,40 +36,94 @@
    #+end_src
 * Disable all default toolbar and more
   #+begin_src emacs-lisp
-    (tooltip-mode 0)						; Disable tooltips
-    (tool-bar-mode 0)						; Disable the toolbar
-    (menu-bar-mode 0)						; Disable the menubar
-    (scroll-bar-mode 0)						; Disable visible scroll bar
-    (show-paren-mode 1)						; Show parentheses pair
-    (blink-cursor-mode 0)						; Disable blink cursor
-    (column-number-mode 1)						; Enable column count
-    (setq inhibit-startup-message t)				; Hide welcome screen
-    (setq ring-bell-function 'ignore)				; Disable bell alarm
-    (add-to-list 'default-frame-alist '(fullscreen . maximized))	; Maximize the window on start-up
+    (tooltip-mode 0)                                             ; Disable tooltips
+    (tool-bar-mode 0)                                            ; Disable the toolbar
+    (menu-bar-mode 0)                                            ; Disable the menubar
+    (scroll-bar-mode 0)                                          ; Disable visible scroll bar
+    (show-paren-mode 1)                                          ; Show parentheses pair
+    (blink-cursor-mode 0)                                        ; Disable blink cursor
+    (column-number-mode 1)                                       ; Enable column count
+    (setq inhibit-startup-message t)                             ; Hide welcome screen
+    (setq ring-bell-function 'ignore)                            ; Disable bell alarm
+    (add-to-list 'default-frame-alist '(fullscreen . maximized)) ; Maximize the window on start-up
   #+end_src
 * Coding prefrerences
   - Absolute line number
     #+begin_src emacs-lisp :tangle yes
-      (setq display-line-numbers-type 'absolute)	; Set absolute line number
-      (global-display-line-numbers-mode)		; Set line number for all files
+      (setq display-line-numbers-type 'absolute)        ; Set absolute line number
+      (global-display-line-numbers-mode)                ; Set line number for all files
     #+end_src
   - Relative line number
     #+begin_src emacs-lisp :tangle no
-      (setq display-line-numbers-type 'relative)	; Set relative line number
-      (global-display-line-numbers-mode)		; Set line number for all files
+      (setq display-line-numbers-type 'relative)        ; Set relative line number
+      (global-display-line-numbers-mode)                ; Set line number for all files
     #+end_src
   - Set custom compile command to an empty string
     #+begin_src emacs-lisp
       (setq compile-command "")
     #+end_src
+* =Whitespace= mode configuration
+** References
+   - [[https://github.com/VernonGrant/discovering-emacs/blob/main/show-notes/4-using-whitespace-mode.md][Using Whitespace Mode in Emacs]]
+** Set tab to space
+   #+begin_src emacs-lisp
+     (setq-default indent-tabs-mode nil)
+   #+end_src
+** Enabling whitespace mode for certain modes.
+   #+begin_src emacs-lisp
+     (defun set-up-whitespace-handling ()
+       (interactive)
+       (whitespace-mode 1))
+
+     (add-hook 'c++-mode-hook 'set-up-whitespace-handling)
+     (add-hook 'c-mode-hook 'set-up-whitespace-handling)
+     (add-hook 'rust-mode-hook 'set-up-whitespace-handling)
+     (add-hook 'yaml-mode-hook 'set-up-whitespace-handling)
+     (add-hook 'python-mode-hook 'set-up-whitespace-handling)
+     (add-hook 'go-mode-hook 'set-up-whitespace-handling)
+     (add-hook 'org-mode-hook 'set-up-whitespace-handling)
+     (add-hook 'web-mode-hook 'set-up-whitespace-handling)
+     (add-hook 'javascript-mode-hook 'set-up-whitespace-handling)
+   #+end_src
+** Change whitespace color
+   #+begin_src emacs-lisp
+     ;; Whitespace color corrections.
+     (require 'color)
+     (let* ((ws-lighten 50) ;; Amount in percentage to lighten up black.
+            (ws-color (color-lighten-name "#000000" ws-lighten)))
+       (custom-set-faces
+        `(whitespace-newline                ((t (:foreground ,ws-color))))
+        `(whitespace-missing-newline-at-eof ((t (:foreground ,ws-color))))
+        `(whitespace-space                  ((t (:foreground ,ws-color))))
+        `(whitespace-space-after-tab        ((t (:foreground ,ws-color))))
+        `(whitespace-space-before-tab       ((t (:foreground ,ws-color))))
+        `(whitespace-tab                    ((t (:foreground ,ws-color))))
+        `(whitespace-trailing               ((t (:foreground ,ws-color))))))
+   #+end_src
+** Set whitespace style
+   - Render whitespace for which tokens
+   #+begin_src emacs-lisp
+     (setq-default whitespace-style
+                   '(face spaces empty tabs newline trailing space-mark tab-mark))
+   #+end_src
+** Whitespace clean up function
+   - Use =C-h f= and type =whitespace-cleanup= for more information.
+   #+begin_src emacs-lisp
+     (setq-default whitespace-action
+                   '(cleanup auto-cleanup))
+   #+end_src
+** Set toggle key for whitespace mode
+   #+begin_src emacs-lisp
+     (global-set-key (kbd "C-c w") 'whitespace-mode)
+   #+end_src
 * Set backup files of emacs location
   #+begin_src emacs-lisp
     (setq backup-directory-alist '(("." . "~/.emacs_saves")))   ; Set backup directory
     (setq make-backup-files nil)                                ; Disable create backup file function [Might bite me in the ass]
   #+end_src
-* =Ido mode=
-  The ido.el package by [[https://www.emacswiki.org/emacs/KimStorm][KimStorm]] lets you interactively do things with buffers and files. 
-  As an example, while searching for a file with C-x C-f, ido can helpfully suggest the files whose paths are closest to your current string, 
+* =Ido mode= configuration
+  The ido.el package by [[https://www.emacswiki.org/emacs/KimStorm][KimStorm]] lets you interactively do things with buffers and files.
+  As an example, while searching for a file with C-x C-f, ido can helpfully suggest the files whose paths are closest to your current string,
   allowing you to find your files more quickly.
 
   #+begin_src emacs-lisp
@@ -79,31 +134,31 @@
 ** Modus 3.0.0
    #+begin_src emacs-lisp :tangle no
      (require 'modus-themes)
-     (setq modus-themes-mode-line '(accented borderless))	; Mode line emacs color
-     (setq modus-themes-region '(bg-only))			; Selection region color
-     (setq modus-themes-bold-constructs t)			; Syntax highlight stuff
-     (setq modus-themes-italic-constructs t)			; Italic comments
-     (setq modus-themes-paren-match '(intense))		; Parentheses matching color
-     (setq modus-themes-prompts '(bold intense))             ; Bold command promt
-     (setq modus-themes-fringes nil)                         ; Left right column thingy
+     (setq modus-themes-mode-line '(accented borderless)) ; Mode line emacs color
+     (setq modus-themes-region '(bg-only))                ; Selection region color
+     (setq modus-themes-bold-constructs t)                ; Syntax highlight stuff
+     (setq modus-themes-italic-constructs t)              ; Italic comments
+     (setq modus-themes-paren-match '(intense))           ; Parentheses matching color
+     (setq modus-themes-prompts '(bold intense))          ; Bold command promt
+     (setq modus-themes-fringes nil)                      ; Left right column thingy
    #+end_src
 ** Modus 4.0.0
 *** Coding related configuration
     #+begin_src emacs-lisp :tangle yes
       (require 'modus-themes)
-      (setq modus-themes-bold-constructs t)		; Syntax highlight stuff
-      (setq modus-themes-prompts '(bold intense))	; Bold command promt
-      (setq modus-themes-italic-constructs t)	; Italic comments
+      (setq modus-themes-bold-constructs t)       ; Syntax highlight stuff
+      (setq modus-themes-prompts '(bold intense)) ; Bold command promt
+      (setq modus-themes-italic-constructs t)     ; Italic comments
     #+end_src
 *** Visual configuration
     #+begin_src emacs-lisp
-      (setq modus-vivendi-tinted-palette-overrides nil)						; Creating varible to store dark theme specific config
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(border-mode-line-inactive unspecified))	; Mode line borderless
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(border-mode-line-active unspecified))	; Mode line borderless
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(bg-paren-match bg-magenta-intense))	; Matching parentheses color
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(bg-region bg-completion))		; Selection color
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-region unspecified))			; Selection color
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fringe unspecified))			; Left and right most column of emacs color
+      (setq modus-vivendi-tinted-palette-overrides nil)                                              ; Creating varible to store dark theme specific config
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(border-mode-line-inactive unspecified)) ; Mode line borderless
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(border-mode-line-active unspecified))   ; Mode line borderless
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(bg-paren-match bg-magenta-intense))     ; Matching parentheses color
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(bg-region bg-completion))               ; Selection color
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-region unspecified))                 ; Selection color
+      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fringe unspecified))                    ; Left and right most column of emacs color
     #+end_src
 *** Org-mode configuration
     - Org-mode =heading= color
@@ -114,8 +169,8 @@
     #+end_src
 * Customize =dired=
   #+begin_src emacs-lisp
-    (setq dired-dwim-target t)									; Quick copy/paste files between buffers
-    (setq dired-listing-switches "--all --format=long --human-readable --group-directories-first")	; Set ls output flags for dired
+    (setq dired-dwim-target t)                                                                     ; Quick copy/paste files between buffers
+    (setq dired-listing-switches "--all --format=long --human-readable --group-directories-first") ; Set ls output flags for dired
   #+end_src
 * Themes and fonts
 ** Themes:
@@ -137,16 +192,16 @@
 * =Org mode= configuration
 ** Pretty org bullet
    #+begin_src emacs-lisp
-     (require 'org-bullets)						; Pretty bullet for org mode
-     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))	; Enable pretty bullet
-     (setq org-src-fontify-natively t)				; Code block syntax highlighting
+     (require 'org-bullets)                                     ; Pretty bullet for org mode
+     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))) ; Enable pretty bullet
+     (setq org-src-fontify-natively t)                          ; Code block syntax highlighting
    #+end_src
 ** Enable languages for org-bable
    #+begin_src emacs-lisp
      (org-babel-do-load-languages
-      'org-babel-load-languages 
+      'org-babel-load-languages
       '((C . t)
-	(shell . t)))
+        (shell . t)))
    #+end_src
 ** Org agenda configuration
 *** Set key binding for org agenda
@@ -160,51 +215,51 @@
 *** Set org agenda prefix format
     #+begin_src emacs-lisp :tangle yes
       (setq org-agenda-prefix-format
-	    '((agenda . " %i %?-12t% s")
-	      (todo . " %i ")
-	      (tags . " %i %-12:c")
-	      (search . " %i %-12:c")))
+            '((agenda . " %i %?-12t% s")
+              (todo . " %i ")
+              (tags . " %i %-12:c")
+              (search . " %i %-12:c")))
     #+end_src
 *** Default org agenda prefix format
     #+begin_src emacs-lisp :tangle no
       (setq org-agenda-prefix-format
-	    '((agenda . " %i %-12:c%?-12t% s")
-	      (todo . " %i %-12:c")
-	      (tags . " %i %-12:c")
-	      (search . " %i %-12:c")))
+            '((agenda . " %i %-12:c%?-12t% s")
+              (todo . " %i %-12:c")
+              (tags . " %i %-12:c")
+              (search . " %i %-12:c")))
     #+end_src
 *** Set custom agenda view
     #+begin_src emacs-lisp
       (setq org-agenda-tags-column 100)
       (setq org-agenda-custom-commands
-	    '(("n" "Agenda and all TODOs" 
-	       ((agenda "" ((org-agenda-overriding-header "Today's agenda")
-			    (org-agenda-span 1)
-			    (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-			    (org-agenda-block-separator nil)
-			    (org-deadline-warning-days 0)))
-		(agenda "" ((org-agenda-overriding-header "\nNext three days")
-			    (org-agenda-start-on-weekday nil)
-			    (org-agenda-start-day "+1d")
-			    (org-deadline-warning-days 0)
-			    (org-agenda-span 3)
-			    (org-agenda-time-grid nil)
-			    (org-agenda-block-separator nil)
-			    (org-agenda-skip-function '(org-agenda-skip-entry-if 'done 'todo))))
-		(agenda "" ((org-agenda-overriding-header "\nNext 14 days")
-			    (org-agenda-start-on-weekday nil)
-			    (org-agenda-start-day "+4d")
-			    (org-agenda-span 14)
-			    (org-agenda-time-grid nil)
-			    (org-deadline-warning-days 0)
-			    (org-agenda-show-all-dates nil)
-			    (org-agenda-block-separator nil)
-			    (org-agenda-entry-types '(:deadline))
-			    (org-agenda-skip-function '(org-agenda-skip-entry-if 'done 'todo))))
-		(todo "TODO" ((org-agenda-overriding-header "\nUnscheduled tasks")
-			      (org-agenda-block-separator nil)
-			      (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))))
-		))))
+            '(("n" "Agenda and all TODOs"
+               ((agenda "" ((org-agenda-overriding-header "Today's agenda")
+                            (org-agenda-span 1)
+                            (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                            (org-agenda-block-separator nil)
+                            (org-deadline-warning-days 0)))
+                (agenda "" ((org-agenda-overriding-header "\nNext three days")
+                            (org-agenda-start-on-weekday nil)
+                            (org-agenda-start-day "+1d")
+                            (org-deadline-warning-days 0)
+                            (org-agenda-span 3)
+                            (org-agenda-time-grid nil)
+                            (org-agenda-block-separator nil)
+                            (org-agenda-skip-function '(org-agenda-skip-entry-if 'done 'todo))))
+                (agenda "" ((org-agenda-overriding-header "\nNext 14 days")
+                            (org-agenda-start-on-weekday nil)
+                            (org-agenda-start-day "+4d")
+                            (org-agenda-span 14)
+                            (org-agenda-time-grid nil)
+                            (org-deadline-warning-days 0)
+                            (org-agenda-show-all-dates nil)
+                            (org-agenda-block-separator nil)
+                            (org-agenda-entry-types '(:deadline))
+                            (org-agenda-skip-function '(org-agenda-skip-entry-if 'done 'todo))))
+                (todo "TODO" ((org-agenda-overriding-header "\nUnscheduled tasks")
+                              (org-agenda-block-separator nil)
+                              (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))))
+                ))))
     #+end_src
 ** Org capture configuration
 *** Set key binding for org capture
@@ -213,43 +268,43 @@
     #+end_src
 *** Set org capture template
     #+begin_src emacs-lisp
-	  (setq org-capture-templates
-		  '(("t" "Create normal tasks" entry
-		     (file+headline "tasks.org" "Normal tasks to be reviewed")
-		     "* TODO %?\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
-		    ("s" "Create task with schedule" entry
-		     (file+headline "tasks.org" "Scheduled tasks")
-		     "* TODO %^{What to do}\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n SCHEDULED: %^t\n")
-		    ("e" "Errands" entry
-		     (file+headline "errands.org" "Random errands")
-		     "* TODO %?\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
-		    ("d" "Create task with deadline" entry
-		     (file+headline "tasks.org" "Tasks with deadline")
-		     "* TODO %^{What to do}\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n DEADLINE: %^t\n")
-		    ("p" "Create personal tasks")
-		    ("pl" "Long term personal tasks" entry
-		     (file+headline "personal.org" "Long term personal tasks :longterm:personal:")
-		     "* TODO %?\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
-		    ("pp" "Personal projects tasks" entry
-		     (file+headline "personal.org" "Personal projects tasks :personal:")
-		     "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
-		    ("u" "Create university tasks")
-		    ("ul" "Long term university tasks" entry
-		     (file+headline "school.org" "Long term university tasks :longterm:university:")
-		     "* TODO %?\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
-		    ("ut" "University tasks" entry
-		     (file+headline "school.org" "University projects tasks :university:")
-		     "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
-		    ("o" "Create office tasks")
-		    ("ot" "Office tasks" entry
-		     (file+headline "office.org" "Office tasks :office:")
-		     "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
-		    ("ol" "Long term office tasks" entry
-		     (file+headline "office.org" "Long term office tasks :longterm:office:")
-		     "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
-		    ("op" "Office projects tasks" entry
-		     (file+headline "office.org" "Office projects tasks :office:")
-		     "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")))
+          (setq org-capture-templates
+                  '(("t" "Create normal tasks" entry
+                     (file+headline "tasks.org" "Normal tasks to be reviewed")
+                     "* TODO %?\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
+                    ("s" "Create task with schedule" entry
+                     (file+headline "tasks.org" "Scheduled tasks")
+                     "* TODO %^{What to do}\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n SCHEDULED: %^t\n")
+                    ("e" "Errands" entry
+                     (file+headline "errands.org" "Random errands")
+                     "* TODO %?\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
+                    ("d" "Create task with deadline" entry
+                     (file+headline "tasks.org" "Tasks with deadline")
+                     "* TODO %^{What to do}\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n DEADLINE: %^t\n")
+                    ("p" "Create personal tasks")
+                    ("pl" "Long term personal tasks" entry
+                     (file+headline "personal.org" "Long term personal tasks :longterm:personal:")
+                     "* TODO %?\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
+                    ("pp" "Personal projects tasks" entry
+                     (file+headline "personal.org" "Personal projects tasks :personal:")
+                     "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
+                    ("u" "Create university tasks")
+                    ("ul" "Long term university tasks" entry
+                     (file+headline "school.org" "Long term university tasks :longterm:university:")
+                     "* TODO %?\n :PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
+                    ("ut" "University tasks" entry
+                     (file+headline "school.org" "University projects tasks :university:")
+                     "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
+                    ("o" "Create office tasks")
+                    ("ot" "Office tasks" entry
+                     (file+headline "office.org" "Office tasks :office:")
+                     "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
+                    ("ol" "Long term office tasks" entry
+                     (file+headline "office.org" "Long term office tasks :longterm:office:")
+                     "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")
+                    ("op" "Office projects tasks" entry
+                     (file+headline "office.org" "Office projects tasks :office:")
+                     "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")))
     #+end_src
 * =Multiple cursors= key binding
   - This /"plugin's"/ file config is located in =~/.emacs.d/.mc-lists.el=
