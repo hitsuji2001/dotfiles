@@ -3,7 +3,7 @@
 #+AUTHOR: Hitsuji
 
 * Usage
-  Put this in your emacs config file =(~/.emacs.el, ~/.emacs, ~/.emacs.d/init.el,...)=
+  Put this code in your emacs config file =(~/.emacs.el, ~/.emacs, ~/.emacs.d/init.el,...)=
   #+begin_src emacs-lisp :tangle no
      (require 'org)
      (org-babel-load-file
@@ -16,12 +16,6 @@
      (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                               ("org"   . "https://orgmode.org/elpa/")
                               ("elpa"  . "https://elpa.gnu.org/packages/")))
-   #+end_src
-** Required packages
-   - These are the packages for emacs to automatically installed upon running.
-   #+begin_src emacs-lisp
-       (setq package-list
-                '(modus-themes use-package rust-mode multiple-cursors markdown-mode magit dockerfile-mode docker-compose-mode org-bullets))
    #+end_src
 ** Inititialize package
    #+begin_src emacs-lisp
@@ -62,7 +56,7 @@
     #+begin_src emacs-lisp
       (setq compile-command "")
     #+end_src
-* =Whitespace= mode configuration
+* =whitespace-mode= configuration
 ** References
    - [[https://github.com/VernonGrant/discovering-emacs/blob/main/show-notes/4-using-whitespace-mode.md][Using Whitespace Mode in Emacs]]
 ** Set tab to space
@@ -75,25 +69,24 @@
        (interactive)
        (whitespace-mode 1))
 
-     (add-hook 'c++-mode-hook 'set-up-whitespace-handling)
-     (add-hook 'c-mode-hook 'set-up-whitespace-handling)
-     (add-hook 'rust-mode-hook 'set-up-whitespace-handling)
-     (add-hook 'yaml-mode-hook 'set-up-whitespace-handling)
-     (add-hook 'python-mode-hook 'set-up-whitespace-handling)
-     (add-hook 'go-mode-hook 'set-up-whitespace-handling)
-     (add-hook 'org-mode-hook 'set-up-whitespace-handling)
-     (add-hook 'web-mode-hook 'set-up-whitespace-handling)
+     (add-hook 'c++-mode-hook        'set-up-whitespace-handling)
+     (add-hook 'c-mode-hook          'set-up-whitespace-handling)
+     (add-hook 'go-mode-hook         'set-up-whitespace-handling)
      (add-hook 'javascript-mode-hook 'set-up-whitespace-handling)
+     (add-hook 'org-mode-hook        'set-up-whitespace-handling)
+     (add-hook 'python-mode-hook     'set-up-whitespace-handling)
+     (add-hook 'rust-mode-hook       'set-up-whitespace-handling)
+     (add-hook 'yaml-mode-hook       'set-up-whitespace-handling)
    #+end_src
 ** Change whitespace color
-   #+begin_src emacs-lisp
+   #+begin_src emacs-lisp :tangle no
      ;; Whitespace color corrections.
      (require 'color)
-     (let* ((ws-lighten 50) ;; Amount in percentage to lighten up black.
+     (let* ((ws-lighten 25) ;; Amount in percentage to lighten up black.
             (ws-color (color-lighten-name "#000000" ws-lighten)))
        (custom-set-faces
-        `(whitespace-newline                ((t (:foreground ,ws-color))))
         `(whitespace-missing-newline-at-eof ((t (:foreground ,ws-color))))
+        `(whitespace-newline                ((t (:foreground ,ws-color))))
         `(whitespace-space                  ((t (:foreground ,ws-color))))
         `(whitespace-space-after-tab        ((t (:foreground ,ws-color))))
         `(whitespace-space-before-tab       ((t (:foreground ,ws-color))))
@@ -133,7 +126,8 @@
 * =Modus theme= config
 ** Modus 3.0.0
    #+begin_src emacs-lisp :tangle no
-     (require 'modus-themes)
+     (use-package modus-themes
+       :ensure t)
      (setq modus-themes-mode-line '(accented borderless)) ; Mode line emacs color
      (setq modus-themes-region '(bg-only))                ; Selection region color
      (setq modus-themes-bold-constructs t)                ; Syntax highlight stuff
@@ -145,7 +139,8 @@
 ** Modus 4.0.0
 *** Coding related configuration
     #+begin_src emacs-lisp :tangle yes
-      (require 'modus-themes)
+      (use-package modus-themes
+        :ensure t)
       (setq modus-themes-bold-constructs t)       ; Syntax highlight stuff
       (setq modus-themes-prompts '(bold intense)) ; Bold command promt
       (setq modus-themes-italic-constructs t)     ; Italic comments
@@ -192,7 +187,8 @@
 * =Org mode= configuration
 ** Pretty org bullet
    #+begin_src emacs-lisp
-     (require 'org-bullets)                                     ; Pretty bullet for org mode
+     (use-package org-bullets
+              :ensure t)                                        ; Pretty bullet for org mode
      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))) ; Enable pretty bullet
      (setq org-src-fontify-natively t)                          ; Code block syntax highlighting
    #+end_src
@@ -306,14 +302,53 @@
                      (file+headline "office.org" "Office projects tasks :office:")
                      "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")))
     #+end_src
-* =Multiple cursors= key binding
+* =multiple-cursors= key binding
   - This /"plugin's"/ file config is located in =~/.emacs.d/.mc-lists.el=
   #+begin_src emacs-lisp
-    (require 'multiple-cursors)
+    (use-package multiple-cursors
+             :ensure t)
     (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
     (global-set-key (kbd "C->")         'mc/mark-next-like-this)
     (global-set-key (kbd "C-<")         'mc/mark-previous-like-this)
     (global-set-key (kbd "C-c C-<")     'mc/mark-all-like-this)
     (global-set-key (kbd "C-\"")        'mc/skip-to-next-like-this)
     (global-set-key (kbd "C-:")         'mc/skip-to-previous-like-this)
+  #+end_src
+* =treemacs= and other plugins
+** Install =treemacs=
+    #+begin_src emacs-lisp
+      (use-package treemacs
+        :ensure t
+        :defer t
+        :init
+        (with-eval-after-load 'winum
+          (define-key winum-keymap (kbd "M-0") #'treemacs-select-window)))
+    #+end_src
+** Install =treemacs-projectile=
+    #+begin_src emacs-lisp
+      (use-package treemacs-projectile
+        :after (treemacs projectile)
+        :ensure t)
+    #+end_src
+** Customizing functionality:
+    #+begin_src emacs-lisp
+      (setq treemacs-indent-guide-mode 1)
+      (setq treemacs-is-never-other-window t)
+      (setq treemacs-indent-guide-style 'line)
+      (setq treemacs-only-current-project-mode 1)
+      (setq treemacs-add-and-display-current-project-exclusively t)
+    #+end_src
+** Custom key binding:
+    #+begin_src emacs-lisp
+      (global-set-key (kbd "M-0")       'treemacs-select-window)
+      (global-set-key (kbd "C-x t 1")   'treemacs-delete-other-windows)
+      (global-set-key (kbd "C-x t d")   'treemacs-select-directory)
+      (global-set-key (kbd "C-x t B")   'treemacs-bookmark)
+      (global-set-key (kbd "C-x t C-t") 'treemacs-find-file)
+      (global-set-key (kbd "C-x t M-t") 'treemacs-find-tag)
+      (global-set-key (kbd "C-x t t")   'treemacs)
+    #+end_src
+* =magit=
+  #+begin_src emacs-lisp
+    (use-package magit :ensure t)
   #+end_src
