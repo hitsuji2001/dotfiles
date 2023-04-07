@@ -302,20 +302,21 @@
                      (file+headline "office.org" "Office projects tasks :office:")
                      "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")))
     #+end_src
-* =multiple-cursors= key binding
+* Plugins
+** =multiple-cursors= key binding
   - This /"plugin's"/ file config is located in =~/.emacs.d/.mc-lists.el=
-  #+begin_src emacs-lisp
-    (use-package multiple-cursors
-             :ensure t)
-    (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-    (global-set-key (kbd "C->")         'mc/mark-next-like-this)
-    (global-set-key (kbd "C-<")         'mc/mark-previous-like-this)
-    (global-set-key (kbd "C-c C-<")     'mc/mark-all-like-this)
-    (global-set-key (kbd "C-\"")        'mc/skip-to-next-like-this)
-    (global-set-key (kbd "C-:")         'mc/skip-to-previous-like-this)
-  #+end_src
-* =treemacs= and other plugins
-** Install =treemacs=
+    #+begin_src emacs-lisp
+      (use-package multiple-cursors
+        :ensure t)
+      (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+      (global-set-key (kbd "C->")         'mc/mark-next-like-this)
+      (global-set-key (kbd "C-<")         'mc/mark-previous-like-this)
+      (global-set-key (kbd "C-c C-<")     'mc/mark-all-like-this)
+      (global-set-key (kbd "C-\"")        'mc/skip-to-next-like-this)
+      (global-set-key (kbd "C-:")         'mc/skip-to-previous-like-this)
+    #+end_src
+** =treemacs= and other plugins
+*** Install =treemacs=
     #+begin_src emacs-lisp
       (use-package treemacs
         :ensure t
@@ -324,21 +325,23 @@
         (with-eval-after-load 'winum
           (define-key winum-keymap (kbd "M-0") #'treemacs-select-window)))
     #+end_src
-** Install =treemacs-projectile=
+*** Install =treemacs-projectile=
     #+begin_src emacs-lisp
       (use-package treemacs-projectile
         :after (treemacs projectile)
         :ensure t)
     #+end_src
-** Customizing functionality:
+*** Customizing functionality:
     #+begin_src emacs-lisp
-      (setq treemacs-indent-guide-mode 1)
       (setq treemacs-is-never-other-window t)
       (setq treemacs-indent-guide-style 'line)
       (setq treemacs-only-current-project-mode 1)
-      (setq treemacs-add-and-display-current-project-exclusively t)
+      (setq treemacs-project-follow-into-home nil)
+      (treemacs-project-follow-mode)
+      (treemacs-indent-guide-mode)
+      (treemacs-add-and-display-current-project-exclusively)
     #+end_src
-** Custom key binding:
+*** Custom key binding:
     #+begin_src emacs-lisp
       (global-set-key (kbd "M-0")       'treemacs-select-window)
       (global-set-key (kbd "C-x t 1")   'treemacs-delete-other-windows)
@@ -348,7 +351,21 @@
       (global-set-key (kbd "C-x t M-t") 'treemacs-find-tag)
       (global-set-key (kbd "C-x t t")   'treemacs)
     #+end_src
-* =magit=
-  #+begin_src emacs-lisp
-    (use-package magit :ensure t)
-  #+end_src
+** =magit=
+   #+begin_src emacs-lisp
+     (use-package magit :ensure t)
+   #+end_src
+** =ledger-mode=
+*** Install =ledger-mode=
+     #+begin_src emacs-lisp
+       (use-package ledger-mode
+         :ensure t
+         :init
+         (setq ledger-clear-whole-transactions 1)
+         :mode "\\.dat\\'")
+     #+end_src
+*** Custom key binding
+    #+begin_src emacs-lisp
+      (add-hook 'ledger-mode-hook
+                (lambda () (local-set-key (kbd "C-c C-o C-f") #'ledger-mode-clean-buffer)))
+    #+end_src
