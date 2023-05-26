@@ -41,14 +41,19 @@
     (setq ring-bell-function 'ignore)                            ; Disable bell alarm
     (add-to-list 'default-frame-alist '(fullscreen . maximized)) ; Maximize the window on start-up
   #+end_src
+* Set backup files of emacs location
+  #+begin_src emacs-lisp
+    (setq backup-directory-alist '(("." . "~/.emacs_saves")))   ; Set backup directory
+    (setq make-backup-files nil)                                ; Disable create backup file function [Might bite me in the ass]
+  #+end_src
 * Coding prefrerences
   - Absolute line number
-    #+begin_src emacs-lisp :tangle yes
+    #+begin_src emacs-lisp :tangle no
       (setq display-line-numbers-type 'absolute)        ; Set absolute line number
       (global-display-line-numbers-mode)                ; Set line number for all files
     #+end_src
   - Relative line number
-    #+begin_src emacs-lisp :tangle no
+    #+begin_src emacs-lisp :tangle yes
       (setq display-line-numbers-type 'relative)        ; Set relative line number
       (global-display-line-numbers-mode)                ; Set line number for all files
     #+end_src
@@ -56,15 +61,54 @@
     #+begin_src emacs-lisp
       (setq compile-command "")
     #+end_src
-* =whitespace-mode= configuration
-** References
-   - [[https://github.com/VernonGrant/discovering-emacs/blob/main/show-notes/4-using-whitespace-mode.md][Using Whitespace Mode in Emacs]]
-** Set tab to space
-   #+begin_src emacs-lisp
+  - Make =M-up= and =M-down= move line up and down respectively.
+    #+begin_src emacs-lisp
+      (defun move-text-internal (arg)
+        (cond
+         ((and mark-active transient-mark-mode)
+          (if (> (point) (mark))
+              (exchange-point-and-mark))
+          (let ((column (current-column))
+                (text (delete-and-extract-region (point) (mark))))
+            (forward-line arg)
+            (move-to-column column t)
+            (set-mark (point))
+            (insert text)
+            (exchange-point-and-mark)
+            (setq deactivate-mark nil)))
+         (t
+          (beginning-of-line)
+          (when (or (> arg 0) (not (bobp)))
+            (forward-line)
+            (when (or (< arg 0) (not (eobp)))
+              (transpose-lines arg))
+            (forward-line -1)))))
+
+      (defun move-text-down (arg)
+        "Move region (transient-mark-mode active) or current line
+        arg lines down."
+        (interactive "*p")
+        (move-text-internal arg))
+
+      (defun move-text-up (arg)
+        "Move region (transient-mark-mode active) or current line
+        arg lines up."
+        (interactive "*p")
+        (move-text-internal (- arg)))
+
+      (global-set-key (kbd "M-<up>") 'move-text-up)
+      (global-set-key (kbd "M-<down>") 'move-text-down)
+    #+end_src
+* Major and monior mode configuration
+** =whitespace-mode= configuration
+*** References
+    - [[https://github.com/VernonGrant/discovering-emacs/blob/main/show-notes/4-using-whitespace-mode.md][Using Whitespace Mode in Emacs]]
+*** Set tab to space
+    #+begin_src emacs-lisp
      (setq-default indent-tabs-mode nil)
-   #+end_src
-** Enabling whitespace mode for certain modes.
-   #+begin_src emacs-lisp
+    #+end_src
+*** Enabling whitespace mode for certain modes.
+    #+begin_src emacs-lisp :tangle no
      (defun set-up-whitespace-handling ()
        (interactive)
        (whitespace-mode 1))
@@ -77,9 +121,9 @@
      (add-hook 'python-mode-hook     'set-up-whitespace-handling)
      (add-hook 'rust-mode-hook       'set-up-whitespace-handling)
      (add-hook 'yaml-mode-hook       'set-up-whitespace-handling)
-   #+end_src
-** Change whitespace color
-   #+begin_src emacs-lisp :tangle no
+    #+end_src
+*** Change whitespace color
+    #+begin_src emacs-lisp :tangle no
      ;; Whitespace color corrections.
      (require 'color)
      (let* ((ws-lighten 25) ;; Amount in percentage to lighten up black.
@@ -92,114 +136,53 @@
         `(whitespace-space-before-tab       ((t (:foreground ,ws-color))))
         `(whitespace-tab                    ((t (:foreground ,ws-color))))
         `(whitespace-trailing               ((t (:foreground ,ws-color))))))
-   #+end_src
-** Set whitespace style
-   - Render whitespace for which tokens
-   #+begin_src emacs-lisp
+    #+end_src
+*** Set whitespace style
+    - Render whitespace for which tokens
+    #+begin_src emacs-lisp
      (setq-default whitespace-style
                    '(face spaces empty tabs newline trailing space-mark tab-mark))
-   #+end_src
-** Whitespace clean up function
-   - Use =C-h f= and type =whitespace-cleanup= for more information.
-   #+begin_src emacs-lisp
+    #+end_src
+*** Whitespace clean up function
+    - Use =C-h f= and type =whitespace-cleanup= for more information.
+    #+begin_src emacs-lisp
      (setq-default whitespace-action
                    '(cleanup auto-cleanup))
-   #+end_src
-** Set toggle key for whitespace mode
-   #+begin_src emacs-lisp
+    #+end_src
+*** Set toggle key for whitespace mode
+    #+begin_src emacs-lisp
      (global-set-key (kbd "C-c w") 'whitespace-mode)
-   #+end_src
-* Set backup files of emacs location
-  #+begin_src emacs-lisp
-    (setq backup-directory-alist '(("." . "~/.emacs_saves")))   ; Set backup directory
-    (setq make-backup-files nil)                                ; Disable create backup file function [Might bite me in the ass]
-  #+end_src
-* =Ido mode= configuration
-  The ido.el package by [[https://www.emacswiki.org/emacs/KimStorm][KimStorm]] lets you interactively do things with buffers and files.
-  As an example, while searching for a file with C-x C-f, ido can helpfully suggest the files whose paths are closest to your current string,
-  allowing you to find your files more quickly.
+    #+end_src
+** =Ido mode= configuration
+   The ido.el package by [[https://www.emacswiki.org/emacs/KimStorm][KimStorm]] lets you interactively do things with buffers and files.
+   As an example, while searching for a file with C-x C-f, ido can helpfully suggest the files whose paths are closest to your current string,
+   allowing you to find your files more quickly.
 
-  #+begin_src emacs-lisp
+   #+begin_src emacs-lisp
     (require 'ido)
     (ido-mode 'buffer) ; Set Ido mode on buffer only
-  #+end_src
-* =Modus theme= config
-** Modus 3.0.0
-   #+begin_src emacs-lisp :tangle no
-     (use-package modus-themes
-       :ensure t)
-     (setq modus-themes-mode-line '(accented borderless)) ; Mode line emacs color
-     (setq modus-themes-region '(bg-only))                ; Selection region color
-     (setq modus-themes-bold-constructs t)                ; Syntax highlight stuff
-     (setq modus-themes-italic-constructs t)              ; Italic comments
-     (setq modus-themes-paren-match '(intense))           ; Parentheses matching color
-     (setq modus-themes-prompts '(bold intense))          ; Bold command promt
-     (setq modus-themes-fringes nil)                      ; Left right column thingy
    #+end_src
-** Modus 4.0.0
-*** Coding related configuration
-    #+begin_src emacs-lisp :tangle yes
-      (use-package modus-themes
-        :ensure t)
-      (setq modus-themes-bold-constructs t)       ; Syntax highlight stuff
-      (setq modus-themes-prompts '(bold intense)) ; Bold command promt
-      (setq modus-themes-italic-constructs t)     ; Italic comments
-    #+end_src
-*** Visual configuration
-    #+begin_src emacs-lisp
-      (setq modus-vivendi-tinted-palette-overrides nil)                                              ; Creating varible to store dark theme specific config
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(border-mode-line-inactive unspecified)) ; Mode line borderless
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(border-mode-line-active unspecified))   ; Mode line borderless
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(bg-paren-match bg-magenta-intense))     ; Matching parentheses color
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(bg-region bg-completion))               ; Selection color
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-region unspecified))                 ; Selection color
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fringe unspecified))                    ; Left and right most column of emacs color
-    #+end_src
-*** Org-mode configuration
-    - Org-mode =heading= color
-    #+begin_src emacs-lisp
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-heading-1 blue-warmer))
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-heading-2 yellow-cooler))
-      (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-heading-3 cyan-cooler))
-    #+end_src
-* Customize =dired=
-  #+begin_src emacs-lisp
+** Customize =dired=
+   #+begin_src emacs-lisp
     (setq dired-dwim-target t)                                                                     ; Quick copy/paste files between buffers
     (setq dired-listing-switches "--all --format=long --human-readable --group-directories-first") ; Set ls output flags for dired
-  #+end_src
-* Themes and fonts
-** Themes:
-   - [[https://github.com/protesilaos/modus-themes][Modus Theme]]
-   - [[https://github.com/rexim/gruber-darker-theme][Gruber Darker Theme]]
-** Load theme
-   #+begin_src emacs-lisp
-    (load-theme 'modus-vivendi-tinted t) ; Modus theme version 4.0.0
    #+end_src
-** Fonts:
-   - [[https://www.jetbrains.com/lp/mono/][JetBrains Mono]]
-   - [[https://fonts.google.com/specimen/Fira+Code][Fira Code]]
-   - [[https://github.com/be5invis/Iosevka][Iosevka]]
-   - [[https://github.com/source-foundry/Hack][Hack]]
-** Load font
-   #+begin_src emacs-lisp
-    (set-frame-font "JetBrainsMono" nil t)
-   #+end_src
-* =Org mode= configuration
-** Pretty org bullet
-   #+begin_src emacs-lisp
+** =Org mode= configuration
+*** Pretty org bullet
+    #+begin_src emacs-lisp
      (use-package org-bullets
               :ensure t)                                        ; Pretty bullet for org mode
      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))) ; Enable pretty bullet
      (setq org-src-fontify-natively t)                          ; Code block syntax highlighting
-   #+end_src
-** Enable languages for org-bable
-   #+begin_src emacs-lisp
+    #+end_src
+*** Enable languages for org-bable
+    #+begin_src emacs-lisp
      (org-babel-do-load-languages
       'org-babel-load-languages
       '((C . t)
         (shell . t)))
-   #+end_src
-** Org agenda configuration
+    #+end_src
+*** Org agenda configuration
 *** Set key binding for org agenda
     #+begin_src emacs-lisp
       (global-set-key (kbd "C-c a") 'org-agenda)
@@ -257,7 +240,7 @@
                               (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled 'deadline))))
                 ))))
     #+end_src
-** Org capture configuration
+*** Org capture configuration
 *** Set key binding for org capture
     #+begin_src emacs-lisp
       (global-set-key (kbd "C-c c") 'org-capture)
@@ -302,28 +285,138 @@
                      (file+headline "office.org" "Office projects tasks :office:")
                      "* TODO %?\n:PROPERTIES:\n :CREATED_AT: %U\n :END:\n")))
     #+end_src
+** =web-mode= gist thingy
+   - References: [[https://gist.github.com/CodyReichert/9dbc8bd2a104780b64891d8736682cea][Configuring Emacs for react, es6, and flow]]
+   - Activate =web-mode= when editing =.js= and =.jsx= files
+     #+begin_src emacs-lisp
+       (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode))
+     #+end_src
+   - Enable JSX syntax highlighting in =.js/.jsx= files
+     #+begin_src emacs-lisp
+       (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+     #+end_src
+   - Configure indentation
+     #+begin_src emacs-lisp
+       (defun web-mode-indentation-adjustment ()
+         "Hooks for Web mode to adjust indentation."
+         (setq web-mode-markup-indent-offset 2)
+         (setq web-mode-css-indent-offset 2)
+         (setq web-mode-code-indent-offset 2))
+       (add-hook 'web-mode-hook 'web-mode-indentation-adjustment)
+     #+end_src
+   - Emmet HTML tag expansion
+     #+begin_src emacs-lisp
+       (add-hook 'web-mode-hook 'emmet-mode)
+     #+end_src
+   - Disable auto qouting
+     #+begin_src emacs-lisp
+       (setq web-mode-enable-auto-quoting nil)
+     #+end_src
+** Simple syntax highlight for =gitignore= file
+   #+begin_src emacs-lisp
+     (require 'generic-x)
+     (add-to-list 'auto-mode-alist '("\\..*ignore$" . hosts-generic-mode))
+   #+end_src
 * Plugins
-** =multiple-cursors= key binding
-  - This /"plugin's"/ file config is located in =~/.emacs.d/.mc-lists.el=
-    #+begin_src emacs-lisp
-      (use-package multiple-cursors
-        :ensure t)
-      (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-      (global-set-key (kbd "C->")         'mc/mark-next-like-this)
-      (global-set-key (kbd "C-<")         'mc/mark-previous-like-this)
-      (global-set-key (kbd "C-c C-<")     'mc/mark-all-like-this)
-      (global-set-key (kbd "C-\"")        'mc/skip-to-next-like-this)
-      (global-set-key (kbd "C-:")         'mc/skip-to-previous-like-this)
+** =Modus theme= config
+*** Modus 3.0.0
+    #+begin_src emacs-lisp :tangle no
+       (use-package modus-themes :ensure t)
+       (setq modus-themes-mode-line '(accented borderless)) ; Mode line emacs color
+       (setq modus-themes-region '(bg-only))                ; Selection region color
+       (setq modus-themes-bold-constructs t)                ; Syntax highlight stuff
+       (setq modus-themes-italic-constructs t)              ; Italic comments
+       (setq modus-themes-paren-match '(intense))           ; Parentheses matching color
+       (setq modus-themes-prompts '(bold intense))          ; Bold command promt
+       (setq modus-themes-fringes nil)                      ; Left right column thingy
     #+end_src
+*** Modus 4.0.0
+**** Coding related configuration
+     #+begin_src emacs-lisp :tangle yes
+       (use-package modus-themes :ensure t)
+       (setq modus-themes-bold-constructs t)       ; Syntax highlight stuff
+       (setq modus-themes-prompts '(bold intense)) ; Bold command promt
+       (setq modus-themes-italic-constructs t)     ; Italic comments
+     #+end_src
+**** Visual configuration
+     #+begin_src emacs-lisp
+        (setq modus-vivendi-tinted-palette-overrides nil)                                              ; Creating varible to store dark theme specific config
+        (add-to-list 'modus-vivendi-tinted-palette-overrides '(border-mode-line-inactive unspecified)) ; Mode line borderless
+        (add-to-list 'modus-vivendi-tinted-palette-overrides '(border-mode-line-active unspecified))   ; Mode line borderless
+        (add-to-list 'modus-vivendi-tinted-palette-overrides '(bg-paren-match bg-magenta-intense))     ; Matching parentheses color
+        (add-to-list 'modus-vivendi-tinted-palette-overrides '(bg-region bg-completion))               ; Selection color
+        (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-region unspecified))                 ; Selection color
+        (add-to-list 'modus-vivendi-tinted-palette-overrides '(fringe unspecified))                    ; Left and right most column of emacs color
+     #+end_src
+**** Org-mode configuration
+     - Org-mode =heading= color
+       #+begin_src emacs-lisp
+         (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-heading-1 blue-warmer))
+         (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-heading-2 yellow-cooler))
+         (add-to-list 'modus-vivendi-tinted-palette-overrides '(fg-heading-3 cyan-cooler))
+       #+end_src
+**** Custom function
+     #+begin_src emacs-lisp
+       (defun custom-modus-themes-toggle ()
+         "Toggle between `modus-operandi' and `modus-vivendi-tinted' themes.
+         This uses `enable-theme' instead of the standard method of
+       `load-theme'.  The technicalities are covered in the Modus themes
+       manual."
+         (interactive)
+         (pcase (modus-themes--current-theme)
+           ;; ('modus-operandi (progn (enable-theme 'modus-vivendi-tinted)
+           ;;                         (disable-theme 'modus-operandi)))
+           ;; ('modus-vivendi-tinted (progn (enable-theme 'modus-operandi)
+           ;;                        (disable-theme 'modus-vivendi-tinted)))
+           ('modus-vivendi-tinted (progn (load-theme 'modus-operandi t)))
+           ('modus-operandi       (progn (load-theme 'modus-vivendi-tinted t)))
+           (_ (error "No Modus theme is loaded; evaluate `modus-themes-load-themes' first"))))
+     #+end_src
+**** Custom key binding
+     #+begin_src emacs-lisp
+       (global-set-key (kbd "<f5>") #'custom-modus-themes-toggle)
+     #+end_src
+** =ledger-mode=
+*** Install =ledger-mode=
+    #+begin_src emacs-lisp
+       (use-package ledger-mode
+         :ensure t
+         :init
+         (setq ledger-clear-whole-transactions 1)
+         :mode "\\.dat\\'")
+    #+end_src
+*** Custom key binding
+    #+begin_src emacs-lisp
+      (add-hook 'ledger-mode-hook
+                (lambda () (local-set-key (kbd "C-c C-o C-f") #'ledger-mode-clean-buffer)))
+    #+end_src
+*** Custom varibles
+    #+begin_src emacs-lisp
+      (setq ledger-reconcile-default-commodity "VND")
+    #+end_src
+** =magit=
+   #+begin_src emacs-lisp
+     (use-package magit :ensure t)
+   #+end_src
+** =multiple-cursors= key binding
+   - This /"plugin's"/ file config is located in =~/.emacs.d/.mc-lists.el=
+     #+begin_src emacs-lisp
+       (use-package multiple-cursors
+         :ensure t)
+       (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+       (global-set-key (kbd "C->")         'mc/mark-next-like-this)
+       (global-set-key (kbd "C-<")         'mc/mark-previous-like-this)
+       (global-set-key (kbd "C-c C-<")     'mc/mark-all-like-this)
+       (global-set-key (kbd "C-\"")        'mc/skip-to-next-like-this)
+       (global-set-key (kbd "C-:")         'mc/skip-to-previous-like-this)
+     #+end_src
 ** =treemacs= and other plugins
 *** Install =treemacs=
     #+begin_src emacs-lisp
       (use-package treemacs
         :ensure t
         :defer t
-        :init
-        (with-eval-after-load 'winum
-          (define-key winum-keymap (kbd "M-0") #'treemacs-select-window)))
+        )
     #+end_src
 *** Install =treemacs-projectile=
     #+begin_src emacs-lisp
@@ -335,37 +428,32 @@
     #+begin_src emacs-lisp
       (setq treemacs-is-never-other-window t)
       (setq treemacs-indent-guide-style 'line)
-      (setq treemacs-only-current-project-mode 1)
       (setq treemacs-project-follow-into-home nil)
       (treemacs-project-follow-mode)
       (treemacs-indent-guide-mode)
-      (treemacs-add-and-display-current-project-exclusively)
     #+end_src
-*** Custom key binding:
+*** Custom key binding:-
     #+begin_src emacs-lisp
       (global-set-key (kbd "M-0")       'treemacs-select-window)
-      (global-set-key (kbd "C-x t 1")   'treemacs-delete-other-windows)
-      (global-set-key (kbd "C-x t d")   'treemacs-select-directory)
-      (global-set-key (kbd "C-x t B")   'treemacs-bookmark)
-      (global-set-key (kbd "C-x t C-t") 'treemacs-find-file)
-      (global-set-key (kbd "C-x t M-t") 'treemacs-find-tag)
       (global-set-key (kbd "C-x t t")   'treemacs)
     #+end_src
-** =magit=
+* Themes and fonts
+** Themes:
+   - [[https://github.com/protesilaos/modus-themes][Modus Theme]]
+   - [[https://github.com/rexim/gruber-darker-theme][Gruber Darker Theme]]
+   - [[https://github.com/catppuccin/emacs][Catppuccin for Emacs]]
+** Load theme
    #+begin_src emacs-lisp
-     (use-package magit :ensure t)
+     ;; (load-theme 'gruber-darker-theme t)
+     (load-theme 'modus-vivendi-tinted t)
+     ;; (load-theme 'catppuccin t)
    #+end_src
-** =ledger-mode=
-*** Install =ledger-mode=
-     #+begin_src emacs-lisp
-       (use-package ledger-mode
-         :ensure t
-         :init
-         (setq ledger-clear-whole-transactions 1)
-         :mode "\\.dat\\'")
-     #+end_src
-*** Custom key binding
-    #+begin_src emacs-lisp
-      (add-hook 'ledger-mode-hook
-                (lambda () (local-set-key (kbd "C-c C-o C-f") #'ledger-mode-clean-buffer)))
-    #+end_src
+** Fonts:
+   - [[https://www.jetbrains.com/lp/mono/][JetBrains Mono]]
+   - [[https://fonts.google.com/specimen/Fira+Code][Fira Code]]
+   - [[https://github.com/be5invis/Iosevka][Iosevka]]
+   - [[https://github.com/source-foundry/Hack][Hack]]
+** Load font
+   #+begin_src emacs-lisp
+     (set-frame-font "JetBrainsMono" nil t)
+   #+end_src
