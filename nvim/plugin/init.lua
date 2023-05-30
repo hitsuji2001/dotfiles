@@ -1,0 +1,1 @@
+/home/hitsuji/workspace/dotfiles/nvim/init.lua
