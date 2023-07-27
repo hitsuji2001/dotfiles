@@ -1,6 +1,3 @@
-" Map escape to jj
-imap jj <Esc>
-
 " Syntax highlighting
 syntax on
 
@@ -25,9 +22,6 @@ set undodir=~/.vim/undordir
 set undofile
 set incsearch
 set relativenumber
-
-" Set winkey to Ctrl L
-set termwinkey=<C-L>
 
 "FINDING FILES:
 set path+=**
