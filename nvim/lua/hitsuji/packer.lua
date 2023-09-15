@@ -12,8 +12,9 @@ return require('packer').startup(function(use)
   use ('tpope/vim-fugitive')
   use ('junegunn/vim-easy-align')
   use ('ellisonleao/gruvbox.nvim')
-  use ('Mofiqul/dracula.nvim')
   use ('folke/tokyonight.nvim')
+  use ('L3MON4D3/LuaSnip')
+  use ('stevearc/dressing.nvim')
   use ({ 'catppuccin/nvim', as = 'catppuccin' })
   use ({ 'rust-lang/rust.vim', ft = 'rust' })
   use ({
@@ -33,11 +34,7 @@ return require('packer').startup(function(use)
     "williamboman/mason.nvim",
     "williamboman/mason-lspconfig.nvim",
     "neovim/nvim-lspconfig",
-    "folke/trouble.nvim",
     'hrsh7th/cmp-nvim-lsp',
-    'hrsh7th/cmp-buffer',
-    'hrsh7th/cmp-path',
-    'hrsh7th/cmp-cmdline',
     'hrsh7th/nvim-cmp',
     run = ":MasonUpdate" -- :MasonUpdate updates registry contents
   }
