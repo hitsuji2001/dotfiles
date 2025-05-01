@@ -1,55 +1,47 @@
-" Syntax highlighting
 syntax on
 
-" Wrap vim around man command
-runtime! ftplugin/man.vim
-
-" Options viewable by using :options
-" Set options viewable by using :set all
-" Or help for individual configs can be accessed :help <name>
-set nocompatible
-set redrawtime=10000
-set laststatus=2
-set noerrorbells
-set tabstop=4 softtabstop=4
-set shiftwidth=4
-set nowrap
-set expandtab
+""" Tab and indentation
+set tabstop=8 softtabstop=4 shiftwidth=4
+set noexpandtab
+set autoindent
 set smartindent
+
+" Line number settings
 set number
-set nobackup
-set undodir=~/.vim/undordir
-set undofile
-set incsearch
 set relativenumber
 
-"FINDING FILES:
-set path+=**
+set wildmenu     " Display all matching files when we tab complete
+set nofoldenable " Disable folding by default
+set incsearch    " Highlight search content
+" set laststatus=2 " Set status bar
+set nocompatible " Set compatibility to Vim only
+set noerrorbells " Disable bell
+set listchars=space:·,tab:→·,trail:~
+set list         " Show whitespace
 
-" Display all matching files when we tab complete
-set wildmenu
-
-" Set mapleader to space
-let mapleader = " "
-
-" Maps
-nmap <leader>hk :vsplit ~/.vim/hotkeys<cr>
-nmap <leader>gd <Plug>(coc-definition)
-nmap <leader>gr <Plug>(coc-references)
-nmap <leader><leader>g :GoFmt<cr>
-nmap <leader><leader>b :Black<cr>
-nmap <leader><leader>u :UndotreeToggle<cr>
-nmap <leader>t :vertical :botright :term<cr>
-
-" move block of code up or down
+""" Key bindings
+" Move block of code up or down
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv
 
-" Set colorscheme
-" colorscheme gruvbox
-colorscheme ron
-set background=dark
+" Remap in Normal mode
+nnoremap <C-C> <esc>
+" Remap in Insert and Replace mode
+inoremap <C-C> <esc>
+" Remap in Visual and Select mode
 
-" Set transparent background
-hi! Normal ctermbg=NONE guibg=NONE
-hi! NonText ctermbg=NONE guibg=NONE
+""" Plugins
+""" https://junegunn.github.io/vim-plug/installation/
+call plug#begin()
+    Plug 'morhetz/gruvbox'    " Gruvbox colorscheme
+    Plug 'ctrlpvim/ctrlp.vim' " Fuzzy file finder
+call plug#end()
+
+""" Plugins key binding
+let mapleader = " "
+
+"" CtrlP
+let g:ctrlp_map = '<leader>ff'
+
+colorscheme blue " Setting this so gruvbox works correctly in kitty term for some reason
+colorscheme gruvbox
